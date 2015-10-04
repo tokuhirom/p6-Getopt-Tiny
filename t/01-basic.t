@@ -26,7 +26,7 @@ subtest {
     my @p;
     my @args = '-p8080', '-p', '9090', 'a', 'b', 'c';
     my @positional = Getopt::Tiny.new()
-        .str('p', -> $v { @p.push: $v })
+        .int('p', -> $v { @p.push: $v })
         .parse(@args);
     is @p, [8080, 9090];
     is @positional, <a b c>;

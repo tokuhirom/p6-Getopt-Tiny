@@ -1,95 +1,188 @@
 use v6;
 unit class Getopt::Tiny;
 
-has $!matcher = [];
-
-method !long($opt, $type-name, $re, $callback, $coerece) {
-    my sub call($val is rw) {
-        if $re.defined {
-            unless $val ~~ $re {
-                self.usage("--$opt requires $type-name parameter, but got $val");
-            }
-        }
-        if $coerece.defined {
-            $val = $coerece($val);
-        }
-        $callback($val);
-        True
-    };
-    $!matcher.append: -> $a {
-        if $a[0] eq "--$opt" {
-            $a.shift;
-            if $a.elems == 0 {
-                self.usage("--$opt requires $type-name parameter");
-            }
-            call($a.shift);
-        } elsif $a[0] ~~ /^\-\-$opt\=(.*)$/ { # -h=3
-            my $val = $/[0].Str;
-            $a.shift;
-            call($val);
-        } else {
-            False;
-        }
-    };
+my class X::Usage is Exception {
+    has $.message;
+    method new(Str $message) {
+        self.bless(message => $message)
+    }
 }
 
-method !short($opt, $type-name, $re, $callback, $coerece) {
-    my sub call($val is rw) {
-        if $re.defined {
-            unless $val ~~ $re {
-                self.usage("-$opt requires $type-name parameter, but got $val");
+my class IntOption {
+    has $.short;
+    has $.long;
+    has $.callback;
+
+    method match($a) {
+        if $.short.defined {
+            return True if self!match-short($a);
+        }
+        if $.long.defined {
+            return True if self!match-long($a);
+        }
+        return False;
+    }
+
+    method !match-long($a) {
+        my $opt = $.long;
+
+        my $val = do {
+            if $a[0] eq "--$opt" {
+                $a.shift;
+                if $a.elems == 0 {
+                    X::Usage.new("--$opt requires integer parameter").throw;
+                }
+                $a.shift;
+            } elsif $a[0] ~~ /^\-\-$opt\=(.*)$/ { # -h=3
+                my $val = $/[0].Str;
+                $a.shift;
+                $val;
+            } else {
+                return False;
             }
+        };
+
+        unless $val ~~ /^<[0..9]>+$/ {
+            X::Usage.new("-$opt requires int parameter, but got $val").throw;
         }
-        if $coerece.defined {
-            $val = $coerece($val);
-        }
-        $callback($val);
+        $.callback($val.Int);
         True
-    };
-    $!matcher.append: -> $a {
-        if $a[0] eq "-$opt" {
-            $a.shift;
-            if $a.elems == 0 {
-                self.usage("-$opt requires $type-name parameter");
+    }
+
+    method !match-short($a) {
+        my $opt = $.short;
+
+        my $val = do {
+            if $a[0] eq "-$opt" {
+                $a.shift;
+                if $a.elems == 0 {
+                    X::Usage.new("-$opt requires int parameter").throw;
+                }
+                $a.shift;
+            } elsif $a[0] ~~ /^\-$opt(.*)$/ { # -h=3
+                my $val = $/[0].Str;
+                $a.shift;
+                $val;
+            } else {
+                return False;
             }
-            call($a.shift);
-        } elsif $a[0] ~~ /^\-$opt(.*)$/ { # -h=3
-            my $val = $/[0].Str;
-            $a.shift;
-            call($val);
-        } else {
-            False;
+        };
+
+        unless $val ~~ /^<[0..9]>+$/ {
+            X::Usage.new("-$opt requires int parameter, but got $val").throw;
         }
-    };
+        my $cb = $.callback; # this assign is workaround for perl6 bug
+        $cb($val.Int);
+        True
+    }
 }
+
+my class StrOption {
+    has $.short;
+    has $.long;
+    has $.callback;
+
+    method match($a) {
+        if $.short.defined {
+            return True if self!match-short($a);
+        }
+        if $.long.defined {
+            return True if self!match-long($a);
+        }
+        return False;
+    }
+
+    method !match-long($a) {
+        my $opt = $.long;
+
+        my $val = do {
+            if $a[0] eq "--$opt" {
+                $a.shift;
+                if $a.elems == 0 {
+                    X::Usage.new("--$opt requires string parameter").throw;
+                }
+                $a.shift;
+            } elsif $a[0] ~~ /^\-\-$opt\=(.*)$/ { # -h=3
+                my $val = $/[0].Str;
+                $a.shift;
+                $val;
+            } else {
+                return False;
+            }
+        };
+
+        my $cb = $.callback;
+        $cb($val);
+        True
+    }
+
+    method !match-short($a) {
+        my $opt = $.short;
+
+        my $val = do {
+            if $a[0] eq "-$opt" {
+                $a.shift;
+                if $a.elems == 0 {
+                    X::Usage.new("-$opt requires string parameter").throw;
+                }
+                $a.shift;
+            } elsif $a[0] ~~ /^\-$opt(.*)$/ { # -h=3
+                my $val = $/[0].Str;
+                $a.shift;
+                $val;
+            } else {
+                return False;
+            }
+        };
+
+        my $cb = $.callback; # this assign is workaround for perl6 bug
+        $cb($val);
+        True
+    }
+}
+
+has $!options = [];
 
 multi method str(Str $opt, $callback) {
-    if $opt.chars == 1 {
-        self.str($opt, Nil, $callback);
-    } else {
-        self.str(Nil, $opt, $callback);
-    }
+    my $type = $opt.chars == 1 ?? 'short' !! 'long';
+    $!options.append: StrOption.new(
+        |($type    => $opt),
+        callback => $callback,
+    );
     self;
 }
 
 multi method str($short, $long, $callback) {
-    self!short($short, 'str', Nil, $callback, Nil) if $short;
-    self!long($long, 'str', Nil, $callback, Nil) if $long;
+    $!options.append: StrOption.new(
+        short    => $short,
+        long     => $long,
+        callback => $callback,
+    );
     self;
 }
 
 multi method int(Str $opt, $callback) {
-    if $opt.elems == 1 {
-        self.int($opt, Nil, $callback);
-    } else {
-        self.int(Nil, $opt, $callback);
-    }
+    my $type = $opt.chars == 1 ?? 'short' !! 'long';
+    $!options.append: IntOption.new(
+        |($type    => $opt),
+        callback => $callback,
+    );
     self;
 }
 
 multi method int($short, $long, $callback) {
-    self!short($short, 'int', rx/^<[0..9]>+$/, $callback, -> $v { $v.Int }) if $short;
-    self!long($long, 'int', rx/^<[0..9]>+$/, $callback, -> $v { $v.Int }) if $long;
+    if $short.defined {
+        $!options.append: IntOption.new(
+            short    => $short,
+            callback => $callback,
+        );
+    }
+    if $long.defined {
+        $!options.append: IntOption.new(
+            long     => $long,
+            callback => $callback,
+        );
+    }
     self;
 }
 
@@ -122,15 +215,20 @@ method parse($args is copy) {
             @positional.append: @$args;
             last;
         }
-        if $args[0] eq '-h' || $args[0] eq '--help' {
-            self.usage();
-            exit 1;
-        }
 
-        for @$!matcher -> $matcher {
-            if $matcher($args) {
+        for @$!options -> $opt {
+            if $opt.match($args) {
                 next LOOP
             }
+        }
+        CATCH {
+            when X::Usage {
+                self.usage($_.message);
+            }
+        }
+
+        if $args[0] eq '-h' || $args[0] eq '--help' {
+            self.usage();
         }
 
         @positional.push: $args.shift;
