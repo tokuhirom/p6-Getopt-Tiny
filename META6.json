@@ -1,0 +1,16 @@
+{
+  "name" : "Getopt::Tiny",
+  "source-url" : "",
+  "perl" : "v6",
+  "build-depends" : [ ],
+  "provides" : {
+    "Getopt::Tiny" : "lib/Getopt/Tiny.pm6"
+  },
+  "depends" : [ ],
+  "description" : "",
+  "test-depends" : [ ],
+  "version" : "*",
+  "authors" : [
+    "Tokuhiro Matsuno"
+  ]
+}
