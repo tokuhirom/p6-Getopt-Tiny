@@ -298,7 +298,7 @@ method parse($args is copy) {
         @positional.push: $args.shift;
     }
 
-    # $PROCESS::ARGFILES = IO::ArgFiles.new(:args($args));
+    $PROCESS::ARGFILES = IO::ArgFiles.new(:args(@positional));
 
     return @positional;
 }
