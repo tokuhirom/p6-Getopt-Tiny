@@ -20,7 +20,30 @@ subtest {
         .parse(@args);
     is @i, <lib blib/lib>;
     is @positional, <a b c>;
-}, 'string short';
+}, 'string long';
+
+subtest {
+    my $x = False;
+    my @args = '-x', 'a', 'b', 'c';
+    my @positional = Getopt::Tiny.new()
+        .bool('x', -> $v { $x = $v })
+        .parse(@args);
+    is $x, True;
+    is @positional, <a b c>;
+}, 'bool short';
+
+subtest {
+    my $pod = False;
+    my $man-pages = True;
+    my @args = '--pod', '--no-man-pages', 'a', 'b', 'c';
+    my @positional = Getopt::Tiny.new()
+        .bool('pod', -> $v { $pod = $v })
+        .bool('man-pages', -> $v { $man-pages = $v })
+        .parse(@args);
+    is $pod, True;
+    is $man-pages, False;
+    is @positional, <a b c>;
+}, 'bool long';
 
 subtest {
     my @p;
