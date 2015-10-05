@@ -300,7 +300,7 @@ my sub pod2usage($pod) {
     }
 }
 
-method print-usage(Str $msg='') {
+method !print-usage(Str $msg='') {
     say "$msg\n" if $msg;
 
     my $pod = callframe(callframe().level).my<$=pod>;
@@ -337,12 +337,12 @@ method parse($args is copy) {
         }
         CATCH {
             when X::Usage {
-                self.print-usage($_.message);
+                self!print-usage($_.message);
             }
         }
 
         if $args[0] eq '-h' || $args[0] eq '--help' {
-            self.print-usage();
+            self!print-usage();
         }
 
         @positional.push: $args.shift;
@@ -361,11 +361,110 @@ Getopt::Tiny - blah blah blah
 
 =head1 SYNOPSIS
 
-  use Getopt::Tiny;
+    use v6;
+
+    use Getopt::Tiny;
+
+    my Str $e;
+    my Str $host = '127.0.0.1';
+    my int $port = 5000;
+
+    my @args = Getopt::Tiny.new()
+        .str('e',         -> $v { $e = $v })
+        .str('I',         -> $v { @*INC.push: $v })
+        .int('p', 'port', -> $v { $port = $v })
+        .str('h', 'host', -> $v { $host = $v })
+        .parse(@*ARGS);
+
+    @args.perl.say;
+
+    =begin pod
+
+    =head1 NAME
+
+    crustup
+
+    =head1 SYNOPSIS
+
+        crustup -e EVAL
+        crustup app.psgi
+
+            -Ilib
+            -p --port
+            -h --host
+
+=end pod
 
 =head1 DESCRIPTION
 
-Getopt::Tiny is ...
+Getopt::Tiny is tiny command line option parser library for Perl6.
+
+=head1 FEATURES
+
+=item Fluent interface
+
+=item Built-in pod2usage feature
+
+=head1 MOTIVATION
+
+Perl6 has a great built-in command line option parser. But it's not flexible.
+It's not perfect for all cases.
+
+=head1 METHODS
+
+=item C<Getopt::Tiny.new()>
+
+Create new instance of the parser.
+
+=item C<$opt.str($opt, $callback)>
+
+If C<$opt> has 1 char, it's equivalent to C<$opt.str($opt, Nil, $callback)>,
+C<$opt.str(Nil, $opt, $callback)> otherwise.
+
+=item C<$opt.str($short, $long, $callback)>
+
+Add string option.
+
+C<$short> accepts C<-Ilib> or C<-I lib> form.
+C<$long> accepts C<--host=lib> or C<--host lib> form.
+
+Argument of C<$callback> is C<Str>.
+
+=item C<$opt.int($opt, $callback)>
+
+If C<$opt> has 1 char, it's equivalent to C<$opt.int($opt, Nil, $callback)>,
+C<$opt.int(Nil, $opt, $callback)> otherwise.
+
+=item C<$opt.int($short, $long, $callback)>
+
+Add integer option.
+
+C<$short> accepts C<-I3> or C<-I 3> form.
+C<$long> accepts C<--port=5963> or C<--port 5963> form.
+
+Argument of C<$callback> is C<Int>.
+
+=item C<$opt.bool($opt, $callback)>
+
+If C<$opt> has 1 char, it's equivalent to C<$opt.bool($opt, Nil, $callback)>,
+C<$opt.bool(Nil, $opt, $callback)> otherwise.
+
+=item C<$opt.bool($short, $long, $callback)>
+
+Add boolean option.
+
+C<$short> accepts C<-x> form.
+C<$long> accepts C<--man-pages> or C<--no-man-pages> form.
+
+Argument of C<$callback> is C<Bool>.
+
+=item C<$opt.parse(@args)>
+
+Run the option parser. Return values are positional arguments.
+
+=head1 pod2usage
+
+This library shows POD's SYNOPSIS section in your script as help message, when it's available.
 
 =head1 COPYRIGHT AND LICENSE
 
