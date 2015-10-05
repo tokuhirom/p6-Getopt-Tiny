@@ -3,6 +3,8 @@ unit class Getopt::Tiny;
 
 use Pod::To::Text;
 
+has $.pass-through;
+
 my class X::Usage is Exception {
     has $.message;
     method new(Str $message) {
@@ -345,12 +347,58 @@ method parse($args is copy) {
             self!print-usage();
         }
 
+        if $args[0] ~~ /^\-/ && !$.pass-through {
+            self!print-usage("Unknown option '$args[0]'");
+        }
+
         @positional.push: $args.shift;
     }
 
-    $PROCESS::ARGFILES = IO::ArgFiles.new(:args(@positional));
-
     return @positional;
+}
+
+sub get-options($opts is rw, $defs, $args=[@*ARGS]) is export {
+    my $getopt = Getopt::Tiny.new();
+    for @$defs -> $def {
+        my $d = $def;
+        my ($short, $long);
+        $d = $d.subst(/^(<[a..z A..Z]>)[\|]?/, -> $/ {
+            $short = $/[0].Str;
+            '';
+        });
+        $d = $d.subst(/^(<[a..z A..Z]><[a..z A..Z 0..9]>+)/, -> $/ {
+            $long = $/[0].Str;
+            '';
+        });
+        unless $d ~~ /^\=/ {
+            $d.perl.say;
+            die "Unknown option format: $def";
+        }
+        $d = $d.substr(1);
+        my $format = $d;
+        given $format {
+            when 's' { # str
+                $getopt.str($short, $long, -> $v { $opts{$long // $short} = $v });
+            }
+            when 's@' { # string array
+                $getopt.str($short, $long, -> $v {
+                    $opts{$long // $short} //= [];
+                    $opts{$long // $short}.append: $v;
+                });
+            }
+            when 'i' { # int
+                $getopt.int($short, $long, -> $v { $opts{$long // $short} = $v });
+            }
+            when '!' { # bool
+                $getopt.bool($short, $long, -> $v { $opts{$long // $short} = $v });
+            }
+        }
+    }
+
+    @*ARGS = $getopt.parse($args);
+    $PROCESS::ARGFILES = IO::ArgFiles.new(:args(@*ARGS));
+
+    Nil;
 }
 
 =begin pod
@@ -365,18 +413,16 @@ Getopt::Tiny - blah blah blah
 
     use Getopt::Tiny;
 
-    my Str $e;
-    my Str $host = '127.0.0.1';
-    my int $port = 5000;
+    my $args = { host => '127.0.0.1', port => 5000 };
 
-    my @args = Getopt::Tiny.new()
-        .str('e',         -> $v { $e = $v })
-        .str('I',         -> $v { @*INC.push: $v })
-        .int('p', 'port', -> $v { $port = $v })
-        .str('h', 'host', -> $v { $host = $v })
-        .parse(@*ARGS);
+    get-options($args, <
+        e=s
+        I=s@
+        p=i
+        h|host=s
+    >);
 
-    @args.perl.say;
+    @positional.perl.say;
 
     =begin pod
 
@@ -393,7 +439,7 @@ Getopt::Tiny - blah blah blah
             -p --port
             -h --host
 
-=end pod
+    =end pod
 
 =head1 DESCRIPTION
 
