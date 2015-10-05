@@ -12,31 +12,14 @@ SYNOPSIS
 
     use Getopt::Tiny;
 
-    my $args = { host => '127.0.0.1', port => 5000 };
+    my $opts = { host => '127.0.0.1', port => 5000 };
 
-    get-options($args, <
+    get-options($opts, <
         e=s
         I=s@
         p=i
         h|host=s
     >);
-
-    @positional.perl.say;
-
-NAME
-====
-
-crustup
-
-SYNOPSIS
-========
-
-    crustup -e EVAL
-    crustup app.psgi
-
-        -Ilib
-        -p --port
-        -h --host
 
 DESCRIPTION
 ===========
