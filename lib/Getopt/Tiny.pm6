@@ -13,6 +13,16 @@ my class IntOption {
     has $.long;
     has $.callback;
 
+    method usage() {
+        if $.short.defined {
+            return "-{$.short}=Int"
+        }
+        if $.long.defined {
+            return "--{$.long}=Int"
+        }
+        return '';
+    }
+
     method match($a) {
         if $.short.defined {
             return True if self!match-short($a);
@@ -82,6 +92,16 @@ my class StrOption {
     has $.long;
     has $.callback;
 
+    method usage() {
+        if $.short.defined {
+            return "-{$.short}=Str"
+        }
+        if $.long.defined {
+            return "--{$.long}=Str"
+        }
+        return '';
+    }
+
     method match($a) {
         if $.short.defined {
             return True if self!match-short($a);
@@ -145,6 +165,16 @@ my class BoolOption {
     has $.short;
     has $.long;
     has $.callback;
+
+    method usage() {
+        if $.short.defined {
+            return "-{$.short}"
+        }
+        if $.long.defined {
+            return "--{$.long}"
+        }
+        return '';
+    }
 
     method match($a) {
         if $.short.defined {
@@ -251,21 +281,14 @@ multi method int($short, $long, $callback) {
 }
 
 method usage(Str $msg='') {
-    # TODO: auto gen
-    say $msg if $msg;
+    say "$msg\n" if $msg;
 
-    say q:to:c/EOF/;
+    my $prog-name = $*PROGRAM-NAME eq '-e'
+        ?? '-e "..."'
+        !! $*PROGRAM-NAME;
 
-        crustup -e 'sub ($env) { 200, [], ['OK'] }'
-        crustup app.psgi
-
-        OPTIONS:
-
-            --port={PORT}
-            --host={HOST}
-            -Ilib
-
-    EOF
+    # I want to show more verbose usage message. patches welcome.
+    say("Usage; $prog-name " ~ @$!options.map({ .usage }).join(" "));
 
     exit 1
 }
