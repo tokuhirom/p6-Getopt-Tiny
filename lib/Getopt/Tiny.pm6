@@ -469,12 +469,29 @@ It's not perfect for all cases.
 
 =item C<get-options(Hash $opts, Array[Str] $definitions)>
 
+Here is a synopsis code:
+
     get-options($args, <
         e=s
         I=s@
         p=i
         h|host=s
     >);
+
+C<$definitions>' grammar is here:
+
+    token TOP { <key> '=' <type> }
+    token key { <short> [ '|' <long> ]?  | <long> }
+
+    token short { <[a..z A..Z]> }
+    token long { <[a..z A..Z]> <[a..z A..Z 0..9]>+ }
+
+    token type {
+        's'  | # str
+        's@' | # array of string
+        '!'  | # bool
+        'i'    # int
+    }
 
 Parse options from C<@*ARGS>.
 
