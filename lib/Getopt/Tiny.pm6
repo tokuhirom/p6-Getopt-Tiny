@@ -1,6 +1,8 @@
 use v6;
 unit class Getopt::Tiny;
 
+use Pod::To::Text;
+
 my class X::Usage is Exception {
     has $.message;
     method new(Str $message) {
@@ -280,8 +282,33 @@ multi method int($short, $long, $callback) {
     self;
 }
 
-method usage(Str $msg='') {
+my sub pod2usage($pod) {
+    given $pod {
+        when Pod::Block::Named {
+            for 0..^$pod.contents.elems-1 -> $i {
+                if $pod.contents[$i] ~~ Pod::Heading && pod2text($pod.contents[$i].contents) eq 'SYNOPSIS' {
+                    return pod2text($pod.contents[$i+1]);
+                }
+            }
+        }
+        when Array {
+            for @$_ {
+                my $got = pod2usage($_);
+                return $got if $got;
+            }
+        }
+    }
+}
+
+method print-usage(Str $msg='') {
     say "$msg\n" if $msg;
+
+    my $pod = callframe(callframe().level).my<$=pod>;
+    my $usage = pod2usage($pod);
+    if $usage {
+        say "\nUsage:\n$usage\n";
+        exit 1;
+    }
 
     my $prog-name = $*PROGRAM-NAME eq '-e'
         ?? '-e "..."'
@@ -310,12 +337,12 @@ method parse($args is copy) {
         }
         CATCH {
             when X::Usage {
-                self.usage($_.message);
+                self.print-usage($_.message);
             }
         }
 
         if $args[0] eq '-h' || $args[0] eq '--help' {
-            self.usage();
+            self.print-usage();
         }
 
         @positional.push: $args.shift;

@@ -14,3 +14,20 @@ my @args = Getopt::Tiny.new()
     .parse(@*ARGS);
 
 @args.perl.say;
+
+=begin pod
+
+=head1 NAME
+
+crustup
+
+=head1 SYNOPSIS
+
+    crustup -e EVAL
+    crustup app.psgi
+
+        -Ilib
+        -p --port
+        -h --host
+
+=end pod
