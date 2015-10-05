@@ -59,7 +59,7 @@ my class IntOption {
         unless $val ~~ /^<[0..9]>+$/ {
             X::Usage.new("-$opt requires int parameter, but got $val").throw;
         }
-        $.callback($val.Int);
+        $.callback()($val.Int);
         True
     }
 
@@ -85,8 +85,7 @@ my class IntOption {
         unless $val ~~ /^<[0..9]>+$/ {
             X::Usage.new("-$opt requires int parameter, but got $val").throw;
         }
-        my $cb = $.callback; # this assign is workaround for perl6 bug
-        $cb($val.Int);
+        $.callback()($val.Int);
         True
     }
 }
@@ -135,8 +134,7 @@ my class StrOption {
             }
         };
 
-        my $cb = $.callback;
-        $cb($val);
+        $.callback()($val);
         True
     }
 
@@ -159,8 +157,7 @@ my class StrOption {
             }
         };
 
-        my $cb = $.callback; # this assign is workaround for perl6 bug
-        $cb($val);
+        $.callback()($val);
         True
     }
 }
@@ -192,15 +189,14 @@ my class BoolOption {
 
     method !match-long($a) {
         my $opt = $.long;
-        my $cb = $.callback;
 
         if $a[0] eq "--$opt" {
             $a.shift;
-            $cb(True);
+            $.callback()(True);
             False;
         } elsif $a[0] eq "--no-$opt" {
             $a.shift;
-            $cb(False);
+            $.callback()(False);
             False;
         } else {
             return False;
@@ -209,11 +205,10 @@ my class BoolOption {
 
     method !match-short($a) {
         my $opt = $.short;
-        my $cb = $.callback; # workaround
 
         if $a[0] eq "-$opt" {
             $a.shift;
-            $cb(True);
+            $.callback()(True);
             True
         } else {
             return False;
