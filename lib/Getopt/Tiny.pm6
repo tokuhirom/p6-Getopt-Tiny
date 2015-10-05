@@ -414,7 +414,7 @@ sub get-options($opts is rw, $defs, $args=[@*ARGS]) is export {
 
 =head1 NAME
 
-Getopt::Tiny - blah blah blah
+Getopt::Tiny - Tiny option parser for Perl6
 
 =head1 SYNOPSIS
 
