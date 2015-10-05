@@ -462,7 +462,7 @@ It's not perfect for all cases.
 
 =head1 Function interface
 
-=item C<get-options(Hash $opts, Array[Str] $definitions)>
+=head2 C<get-options(Hash $opts, Array[Str] $definitions)>
 
 Here is a synopsis code:
 
@@ -498,16 +498,16 @@ C<$definitions> should be one of following style.
 
 =head2 METHODS
 
-=item C<my $opt = Getopt::Tiny.new()>
+=head3 C<my $opt = Getopt::Tiny.new()>
 
 Create new instance of the parser.
 
-=item C<$opt.str($opt, $callback)>
+=head3 C<$opt.str($opt, $callback)>
 
 If C<$opt> has 1 char, it's equivalent to C<$opt.str($opt, Nil, $callback)>,
 C<$opt.str(Nil, $opt, $callback)> otherwise.
 
-=item C<$opt.str($short, $long, $callback)>
+=head3 C<$opt.str($short, $long, $callback)>
 
 Add string option.
 
@@ -516,12 +516,12 @@ C<$long> accepts C<--host=lib> or C<--host lib> form.
 
 Argument of C<$callback> is C<Str>.
 
-=item C<$opt.int($opt, $callback)>
+=head3 C<$opt.int($opt, $callback)>
 
 If C<$opt> has 1 char, it's equivalent to C<$opt.int($opt, Nil, $callback)>,
 C<$opt.int(Nil, $opt, $callback)> otherwise.
 
-=item C<$opt.int($short, $long, $callback)>
+=head3 C<$opt.int($short, $long, $callback)>
 
 Add integer option.
 
@@ -530,12 +530,12 @@ C<$long> accepts C<--port=5963> or C<--port 5963> form.
 
 Argument of C<$callback> is C<Int>.
 
-=item C<$opt.bool($opt, $callback)>
+=head3 C<$opt.bool($opt, $callback)>
 
 If C<$opt> has 1 char, it's equivalent to C<$opt.bool($opt, Nil, $callback)>,
 C<$opt.bool(Nil, $opt, $callback)> otherwise.
 
-=item C<$opt.bool($short, $long, $callback)>
+=head3 C<$opt.bool($short, $long, $callback)>
 
 Add boolean option.
 
@@ -544,7 +544,7 @@ C<$long> accepts C<--man-pages> or C<--no-man-pages> form.
 
 Argument of C<$callback> is C<Bool>.
 
-=item C<$opt.parse(@args)>
+=head3 C<$opt.parse(@args)>
 
 Run the option parser. Return values are positional arguments.
 

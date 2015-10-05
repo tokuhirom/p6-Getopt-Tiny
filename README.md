@@ -58,7 +58,8 @@ Perl6 has a great built-in command line option parser. But it's not flexible. It
 Function interface
 ==================
 
-  * `get-options(Hash $opts, Array[Str] $definitions)`
+`get-options(Hash $opts, Array[Str] $definitions)`
+--------------------------------------------------
 
 Here is a synopsis code:
 
@@ -96,15 +97,15 @@ OO Interface
 METHODS
 -------
 
-  * `my $opt = Getopt::Tiny.new()`
+### `my $opt = Getopt::Tiny.new()`
 
 Create new instance of the parser.
 
-  * `$opt.str($opt, $callback)`
+### `$opt.str($opt, $callback)`
 
 If `$opt` has 1 char, it's equivalent to `$opt.str($opt, Nil, $callback)`, `$opt.str(Nil, $opt, $callback)` otherwise.
 
-  * `$opt.str($short, $long, $callback)`
+### `$opt.str($short, $long, $callback)`
 
 Add string option.
 
@@ -112,11 +113,11 @@ Add string option.
 
 Argument of `$callback` is `Str`.
 
-  * `$opt.int($opt, $callback)`
+### `$opt.int($opt, $callback)`
 
 If `$opt` has 1 char, it's equivalent to `$opt.int($opt, Nil, $callback)`, `$opt.int(Nil, $opt, $callback)` otherwise.
 
-  * `$opt.int($short, $long, $callback)`
+### `$opt.int($short, $long, $callback)`
 
 Add integer option.
 
@@ -124,11 +125,11 @@ Add integer option.
 
 Argument of `$callback` is `Int`.
 
-  * `$opt.bool($opt, $callback)`
+### `$opt.bool($opt, $callback)`
 
 If `$opt` has 1 char, it's equivalent to `$opt.bool($opt, Nil, $callback)`, `$opt.bool(Nil, $opt, $callback)` otherwise.
 
-  * `$opt.bool($short, $long, $callback)`
+### `$opt.bool($short, $long, $callback)`
 
 Add boolean option.
 
@@ -136,7 +137,7 @@ Add boolean option.
 
 Argument of `$callback` is `Bool`.
 
-  * `$opt.parse(@args)`
+### `$opt.parse(@args)`
 
 Run the option parser. Return values are positional arguments.
 
