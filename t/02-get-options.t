@@ -20,7 +20,7 @@ subtest {
         <p|port=i>,
         ['-p3']
     );
-    is-deeply $opts, {:p(3)};
+    is-deeply $opts, {:port(3)};
 }, 'short-int-array';
 
 done-testing;

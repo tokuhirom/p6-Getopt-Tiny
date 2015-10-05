@@ -317,7 +317,7 @@ method !print-usage(Str $msg='') {
         !! $*PROGRAM-NAME;
 
     # I want to show more verbose usage message. patches welcome.
-    say("Usage; $prog-name " ~ @$!options.map({ .usage }).join(" "));
+    say("Usage: $prog-name " ~ @$!options.map({ .usage }).join(" "));
 
     exit 1
 }
@@ -357,26 +357,35 @@ method parse($args is copy) {
     return @positional;
 }
 
+
+my grammar GetoptionsGrammar {
+    token TOP { <key> '=' <type> }
+    token key { <short> [ '|' <long> ]?  | <long> }
+
+    token short { <[a..z A..Z]> }
+    token long { <[a..z A..Z]> <[a..z A..Z 0..9]>+ }
+
+    token type {
+        's'  | # str
+        's@' | # array of string
+        '!'  | # bool
+        'i'    # int
+    }
+};
+
+my class GetoptionsAction {
+    method type($/)  { $/.make: ~$/ }
+    method short($/) { $/.make: ~$/ }
+    method long($/)  { $/.make: ~$/ }
+    method key($/)   { $/.make: ($<short>.made, $<long>.made) }
+    method TOP($/)   { $/.make: (|$<key>.made, $<type>.made) }
+}
+
 sub get-options($opts is rw, $defs, $args=[@*ARGS]) is export {
     my $getopt = Getopt::Tiny.new();
     for @$defs -> $def {
-        my $d = $def;
-        my ($short, $long);
-        $d = $d.subst(/^(<[a..z A..Z]>)[\|]?/, -> $/ {
-            $short = $/[0].Str;
-            '';
-        });
-        $d = $d.subst(/^(<[a..z A..Z]><[a..z A..Z 0..9]>+)/, -> $/ {
-            $long = $/[0].Str;
-            '';
-        });
-        unless $d ~~ /^\=/ {
-            $d.perl.say;
-            die "Unknown option format: $def";
-        }
-        $d = $d.substr(1);
-        my $format = $d;
-        given $format {
+        my ($short, $long, $type) = @(GetoptionsGrammar.parse($def, :actions(GetoptionsAction)).made);
+        given $type {
             when 's' { # str
                 $getopt.str($short, $long, -> $v { $opts{$long // $short} = $v });
             }
@@ -456,9 +465,28 @@ Getopt::Tiny is tiny command line option parser library for Perl6.
 Perl6 has a great built-in command line option parser. But it's not flexible.
 It's not perfect for all cases.
 
-=head1 METHODS
+=head1 Function interface
 
-=item C<Getopt::Tiny.new()>
+=item C<get-options(Hash $opts, Array[Str] $definitions)>
+
+    get-options($args, <
+        e=s
+        I=s@
+        p=i
+        h|host=s
+    >);
+
+Parse options from C<@*ARGS>.
+
+C<$opts> should be Hash. This function writes result to C<$opts>.
+
+C<$definitions> should be one of following style.
+
+=head1 OO Interface
+
+=head2 METHODS
+
+=item C<my $opt = Getopt::Tiny.new()>
 
 Create new instance of the parser.
 
