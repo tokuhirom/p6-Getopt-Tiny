@@ -376,8 +376,10 @@ my class GetoptionsAction {
     method TOP($/)   { $/.make: (|$<key>.made, $<type>.made) }
 }
 
-sub get-options($opts is rw, $defs, $args=[@*ARGS]) is export {
-    my $getopt = Getopt::Tiny.new();
+sub get-options($opts is rw, $defs, $args=[@*ARGS], Bool :$pass-through=False) is export {
+    my $getopt = Getopt::Tiny.new(
+        pass-through => $pass-through,
+    );
     for @$defs -> $def {
         my ($short, $long, $type) = @(GetoptionsGrammar.parse($def, :actions(GetoptionsAction)).made);
         given $type {
@@ -444,7 +446,7 @@ It's not perfect for all cases.
 
 =head1 Function interface
 
-=head2 C<get-options(Hash $opts, Array[Str] $definitions)>
+=head2 C<get-options(Hash $opts, Array[Str] $definitions, Bool :$pass-through=False)>
 
 Here is a synopsis code:
 
@@ -475,6 +477,10 @@ Parse options from C<@*ARGS>.
 C<$opts> should be Hash. This function writes result to C<$opts>.
 
 C<$definitions> should be one of following style.
+
+If you want to pass-through unknown option, you can pass C<:pass-through> as a named argument like following:
+
+    get-options($x, $y, :pass-through);
 
 =head1 OO Interface
 

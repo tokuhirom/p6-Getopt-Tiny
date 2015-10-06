@@ -34,5 +34,17 @@ subtest {
     is-deeply $opts, {:port(3)};
 }, 'short-int-array';
 
+subtest {
+    my $opts={};
+    temp @*ARGS="-x";
+    get-options(
+        $opts,
+        <p|port=i>,
+        ['-x'],
+        :pass-through
+    );
+    is-deeply $opts, {};
+    is-deeply [@*ARGS], ['-x'];
+}, 'pass-through';
 
 done-testing;
