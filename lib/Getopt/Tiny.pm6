@@ -482,6 +482,8 @@ If you want to pass-through unknown option, you can pass C<:pass-through> as a n
 
     get-options($x, $y, :pass-through);
 
+This function modifies C<@*ARGS> and C<$PROCESS::ARGFILES>.
+
 =head1 OO Interface
 
 =head2 METHODS
@@ -535,6 +537,8 @@ Argument of C<$callback> is C<Bool>.
 =head3 C<$opt.parse(@args)>
 
 Run the option parser. Return values are positional arguments.
+
+This operation does *not* modify C<@*ARGS> and C<$PROCESS::ARGFILES>.
 
 =head1 pod2usage
 

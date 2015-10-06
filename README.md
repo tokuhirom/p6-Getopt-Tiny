@@ -41,8 +41,8 @@ Perl6 has a great built-in command line option parser. But it's not flexible. It
 Function interface
 ==================
 
-`get-options(Hash $opts, Array[Str] $definitions)`
---------------------------------------------------
+`get-options(Hash $opts, Array[Str] $definitions, Bool :$pass-through=False)`
+-----------------------------------------------------------------------------
 
 Here is a synopsis code:
 
@@ -73,6 +73,12 @@ Parse options from `@*ARGS`.
 `$opts` should be Hash. This function writes result to `$opts`.
 
 `$definitions` should be one of following style.
+
+If you want to pass-through unknown option, you can pass `:pass-through` as a named argument like following:
+
+    get-options($x, $y, :pass-through);
+
+This function modifies `@*ARGS` and `$PROCESS::ARGFILES`.
 
 OO Interface
 ============
@@ -123,6 +129,8 @@ Argument of `$callback` is `Bool`.
 ### `$opt.parse(@args)`
 
 Run the option parser. Return values are positional arguments.
+
+This operation does *not* modify `@*ARGS` and `$PROCESS::ARGFILES`.
 
 pod2usage
 =========
