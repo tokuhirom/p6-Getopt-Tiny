@@ -4,6 +4,17 @@ use Test;
 use Getopt::Tiny;
 
 subtest {
+    my $opts = {};
+    temp @*ARGS="--accesslog", "-e", "1", 'x';
+    get-options(
+        $opts,
+        <e=s accesslog=!>
+    );
+    is-deeply $opts, {:accesslog, :e('1')};
+    is-deeply [@*ARGS], ['x'];
+}, 'bool';
+
+subtest {
     my $opts;
     get-options(
         $opts,
@@ -22,5 +33,6 @@ subtest {
     );
     is-deeply $opts, {:port(3)};
 }, 'short-int-array';
+
 
 done-testing;

@@ -193,11 +193,11 @@ my class BoolOption {
         if $a[0] eq "--$opt" {
             $a.shift;
             $.callback()(True);
-            False;
+            True;
         } elsif $a[0] eq "--no-$opt" {
             $a.shift;
             $.callback()(False);
-            False;
+            True;
         } else {
             return False;
         }
@@ -396,6 +396,7 @@ sub get-options($opts is rw, $defs, $args=[@*ARGS]) is export {
             when '!' { # bool
                 $getopt.bool($short, $long, -> $v { $opts{$long // $short} = $v });
             }
+            default { die "unknown type: $type" }
         }
     }
 
