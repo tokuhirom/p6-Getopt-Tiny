@@ -7,7 +7,7 @@
     "Getopt::Tiny" : "lib/Getopt/Tiny.pm6"
   },
   "depends" : [ ],
-  "description" : "",
+  "description" : "Tiny option parser for Perl6",
   "test-depends" : [ ],
   "version" : "*",
   "authors" : [
